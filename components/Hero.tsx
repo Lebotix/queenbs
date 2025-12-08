@@ -1,5 +1,6 @@
 import React from 'react';
 import { scrollToSection } from '../utils/helpers';
+import { LOGO_URL } from '../constants';
 
 export const Hero: React.FC = () => {
     return (
@@ -8,7 +9,7 @@ export const Hero: React.FC = () => {
                 <div className="mb-8 flex justify-center">
                     <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>
                         <img
-                            src="https://i.imgur.com/035fOyH.jpeg"
+                            src={LOGO_URL}
                             alt="Queen B's Cleaning Logo"
                             className="w-64 h-64 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
                         />

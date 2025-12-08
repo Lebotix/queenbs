@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SERVICES } from '../constants';
 import { ServiceType, BookingDetails, PaymentMethod, AIQuoteResponse } from '../types';
 import { generateSmartQuote } from '../services/geminiService';
+import { sendBookingNotification } from '../services/emailService';
 import { 
   Sparkles, ShieldCheck, Truck, HardHat, 
   Calendar, Clock, CreditCard, DollarSign, CheckCircle, 
@@ -15,7 +16,9 @@ const icons: Record<string, React.FC<any>> = {
 export const BookingWizard: React.FC = () => {
   const [step, setStep] = useState(1);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   
   // Booking State
   const [booking, setBooking] = useState<BookingDetails>({
@@ -82,6 +85,22 @@ export const BookingWizard: React.FC = () => {
 
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => setStep(prev => prev - 1);
+
+  const handleSubmitBooking = async () => {
+    setIsSubmitting(true);
+    setSubmitError('');
+    
+    // Send email notification
+    const success = await sendBookingNotification(booking);
+    
+    setIsSubmitting(false);
+    
+    if (success) {
+        nextStep(); // Go to success screen
+    } else {
+        setSubmitError("There was an issue sending your request. Please try again or call us directly.");
+    }
+  };
 
   const renderStep1_Service = () => (
     <div className="space-y-6 animate-fadeIn">
@@ -396,15 +415,26 @@ export const BookingWizard: React.FC = () => {
             )}
         </div>
 
+        {submitError && (
+            <div className="mt-4 p-3 bg-red-900/50 border border-red-700 rounded text-red-200 text-sm">
+                {submitError}
+            </div>
+        )}
+
         <div className="flex justify-between pt-6">
             <button onClick={prevStep} className="text-gray-400 hover:text-white font-medium px-4 flex items-center gap-2 transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Back
             </button>
             <button 
-                onClick={nextStep} 
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 shadow-lg flex items-center gap-2 shadow-purple-900/50"
+                onClick={handleSubmitBooking}
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 shadow-lg flex items-center gap-2 shadow-purple-900/50 disabled:opacity-50"
             >
-                Request Appointment <CheckCircle className="h-4 w-4" />
+                {isSubmitting ? (
+                    <>Sending Request <Loader2 className="h-4 w-4 animate-spin" /></>
+                ) : (
+                    <>Request Appointment <CheckCircle className="h-4 w-4" /></>
+                )}
             </button>
         </div>
     </div>
