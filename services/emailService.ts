@@ -7,7 +7,7 @@ export const sendBookingNotification = async (booking: BookingDetails) => {
   const publicKey = process.env.VITE_EMAILJS_PUBLIC_KEY;
 
   if (!serviceId || !templateId || !publicKey) {
-    console.error("EmailJS configuration is missing. Check your .env file.");
+    console.error("EmailJS configuration is missing.");
     // We return true in development so the UI doesn't break even if email isn't set up yet
     return true; 
   }

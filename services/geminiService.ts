@@ -2,7 +2,7 @@ import { GoogleGenAI, Type, Schema, Chat } from "@google/genai";
 import { AIQuoteResponse, ServiceType } from '../types';
 
 // Initialize the Gemini Client
-// CRITICAL: We assume process.env.API_KEY is available.
+// CRITICAL: We use process.env.API_KEY as per guidelines
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateSmartQuote = async (
@@ -76,6 +76,10 @@ export const generateSmartQuote = async (
 };
 
 export const createAssistantChat = (): Chat => {
+  if (!process.env.API_KEY) {
+    console.error("API Key is missing for Gemini Chat");
+    throw new Error("API Key missing");
+  }
   return ai.chats.create({
     model: 'gemini-2.5-flash',
     config: {
