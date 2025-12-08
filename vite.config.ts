@@ -1,3 +1,5 @@
+// lebotix/queenbs/queenbs-800dadfe53fa279c1011a9dcbbec6ddff3fa9c34/vite.config.ts
+
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -7,6 +9,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
+    // Add this line to force relative paths for assets
+    base: './', 
+    
     plugins: [react()],
     define: {
       // Vital: This maps the system environment variables to the process.env object 
