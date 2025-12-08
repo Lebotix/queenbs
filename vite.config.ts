@@ -9,17 +9,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    // Add this line to force relative paths for assets
+    // CRITICAL FIX: Forces asset paths to be relative.
     base: './', 
     
     plugins: [react()],
-    define: {
-      // Vital: This maps the system environment variables to the process.env object 
-      // used in the services code.
-      'process.env.API_KEY': JSON.stringify(env.API_KEY),
-      'process.env.VITE_EMAILJS_SERVICE_ID': JSON.stringify(env.VITE_EMAILJS_SERVICE_ID),
-      'process.env.VITE_EMAILJS_TEMPLATE_ID': JSON.stringify(env.VITE_EMAILJS_TEMPLATE_ID),
-      'process.env.VITE_EMAILJS_PUBLIC_KEY': JSON.stringify(env.VITE_EMAILJS_PUBLIC_KEY),
-    },
+    // ... rest of the config
   };
 });
