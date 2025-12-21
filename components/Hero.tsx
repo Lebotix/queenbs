@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { scrollToSection } from '../utils/helpers';
 import { LOGO_URL } from '../constants';
@@ -12,6 +13,10 @@ export const Hero: React.FC = () => {
                             src={LOGO_URL}
                             alt="Queen B's Cleaning Logo"
                             className="w-64 h-64 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                                // Fallback if image doesn't exist yet
+                                (e.target as HTMLImageElement).src = "https://placehold.co/400x400/purple/white?text=Queen+Bs+Cleaning";
+                            }}
                         />
                     </a>
                 </div>
@@ -36,7 +41,7 @@ export const Hero: React.FC = () => {
                     onClick={() => scrollToSection('booking')}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all transform hover:scale-105 shadow-lg shadow-purple-500/50"
                 >
-                    Schedule Online
+                    Request a Quote
                 </button>
             </div>
         </section>

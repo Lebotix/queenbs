@@ -1,3 +1,4 @@
+
 import emailjs from '@emailjs/browser';
 import { BookingDetails } from '../types';
 
@@ -25,8 +26,7 @@ export const sendBookingNotification = async (booking: BookingDetails) => {
     date: booking.date,
     time: booking.time,
     address: booking.address,
-    price: booking.price,
-    payment_method: booking.paymentMethod,
+    price: "To be discussed (Case by Case)",
     message: `New booking request received for ${booking.address}. Please review and approve.`
   };
 

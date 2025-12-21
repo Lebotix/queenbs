@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { SERVICES } from '../constants';
-import { ServiceType, BookingDetails, PaymentMethod, AIQuoteResponse } from '../types';
+import { ServiceType, BookingDetails, AIQuoteResponse } from '../types';
 import { generateSmartQuote } from '../services/geminiService';
 import { sendBookingNotification } from '../services/emailService';
 import { 
   Sparkles, ShieldCheck, Truck, HardHat, 
-  Calendar, Clock, CreditCard, DollarSign, CheckCircle, 
-  Loader2, ArrowRight, ArrowLeft, User, MapPin, Wand2, Lock, AlertCircle
+  Calendar, Clock, CheckCircle, 
+  Loader2, ArrowRight, ArrowLeft, MapPin, Wand2, Info
 } from 'lucide-react';
 
 const icons: Record<string, React.FC<any>> = {
@@ -29,36 +30,14 @@ export const BookingWizard: React.FC = () => {
     time: '09:00',
     address: '',
     instructions: '',
-    price: 120,
-    paymentMethod: PaymentMethod.CREDIT_CARD,
     contactName: '',
     contactEmail: '',
     contactPhone: ''
   });
 
-  // Extra state for improved form UI
-  const [sameAsShipping, setSameAsShipping] = useState(true);
-
   // AI Quote State
   const [aiDescription, setAiDescription] = useState('');
   const [aiSuggestion, setAiSuggestion] = useState<AIQuoteResponse | null>(null);
-
-  // Calculated Price (Simple logic for fallback)
-  const calculatePrice = () => {
-    if (aiSuggestion) return aiSuggestion.estimatedPrice; // Lock price if AI set it
-    
-    const service = SERVICES.find(s => s.id === booking.serviceType);
-    let base = service ? service.basePrice : 100;
-    base += (booking.bedrooms - 1) * 20;
-    base += (booking.bathrooms - 1) * 30;
-    return base;
-  };
-
-  useEffect(() => {
-    if (!aiSuggestion) {
-      setBooking(prev => ({ ...prev, price: calculatePrice() }));
-    }
-  }, [booking.serviceType, booking.bedrooms, booking.bathrooms, aiSuggestion]);
 
   const handleAIQuote = async () => {
     if (!aiDescription.trim()) return;
@@ -70,11 +49,10 @@ export const BookingWizard: React.FC = () => {
         setAiSuggestion(quote);
         setBooking(prev => ({
           ...prev,
-          serviceType: quote.recommendedService,
-          price: quote.estimatedPrice
+          serviceType: quote.recommendedService
         }));
       } else {
-        setAiError("Couldn't generate a quote. Please proceed manually.");
+        setAiError("Couldn't analyze request. Please proceed manually.");
       }
     } catch (e) {
       setAiError("AI Service unavailable.");
@@ -104,13 +82,13 @@ export const BookingWizard: React.FC = () => {
 
   const renderStep1_Service = () => (
     <div className="space-y-6 animate-fadeIn">
-      <h3 className="text-2xl font-serif font-bold text-white mb-4">Choose Your Service</h3>
+      <h3 className="text-2xl font-serif font-bold text-white mb-4">Select Service Interest</h3>
       
       {/* AI Helper Section */}
       <div className="bg-gray-900/50 border border-purple-500/30 p-6 rounded-xl mb-8">
         <div className="flex items-center gap-2 mb-3 text-pink-400">
           <Wand2 className="h-5 w-5" />
-          <h4 className="font-bold">Not sure what you need? Ask our AI Assistant.</h4>
+          <h4 className="font-bold">Describe your needs for a better estimate.</h4>
         </div>
         <div className="flex gap-4 flex-col md:flex-row">
             <div className="flex-1">
@@ -152,16 +130,15 @@ export const BookingWizard: React.FC = () => {
                     disabled={isProcessingAI || !aiDescription}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-bold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-900/50"
                 >
-                    {isProcessingAI ? <Loader2 className="animate-spin h-4 w-4" /> : 'Get Smart Quote'}
+                    {isProcessingAI ? <Loader2 className="animate-spin h-4 w-4" /> : 'Analyze Details'}
                 </button>
             </div>
         </div>
         {aiError && <p className="text-red-400 text-sm mt-2">{aiError}</p>}
         {aiSuggestion && (
             <div className="mt-4 bg-gray-800 p-4 rounded border-l-4 border-pink-500 shadow-sm">
-                <p className="text-white font-medium">Suggestion: <span className="font-bold text-pink-400">{aiSuggestion.recommendedService}</span></p>
+                <p className="text-white font-medium">Recommended: <span className="font-bold text-pink-400">{aiSuggestion.recommendedService}</span></p>
                 <p className="text-gray-300 text-sm italic">"{aiSuggestion.reasoning}"</p>
-                <p className="text-purple-400 font-bold mt-1">Est. Time: {aiSuggestion.estimatedHours} hrs</p>
             </div>
         )}
       </div>
@@ -174,7 +151,7 @@ export const BookingWizard: React.FC = () => {
               key={service.id}
               onClick={() => {
                 setBooking({ ...booking, serviceType: service.id });
-                setAiSuggestion(null); // Reset AI override if user manually selects
+                setAiSuggestion(null);
               }}
               className={`relative p-6 border rounded-xl text-left transition-all hover:shadow-lg ${
                 booking.serviceType === service.id
@@ -201,7 +178,6 @@ export const BookingWizard: React.FC = () => {
         })}
       </div>
 
-      {/* Manual Details if no AI used */}
       {!aiSuggestion && (
           <div className="mt-8 grid grid-cols-2 gap-6 bg-gray-800 p-6 rounded-xl border border-gray-600">
              <div>
@@ -229,7 +205,7 @@ export const BookingWizard: React.FC = () => {
 
       <div className="flex justify-end pt-6 border-t border-gray-700">
         <button onClick={nextStep} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 shadow-lg shadow-purple-900/50">
-            Next: Schedule <ArrowRight className="h-4 w-4" />
+            Next Step <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </div>
@@ -237,12 +213,12 @@ export const BookingWizard: React.FC = () => {
 
   const renderStep2_Details = () => (
     <div className="space-y-6 animate-fadeIn">
-        <h3 className="text-2xl font-serif font-bold text-white mb-4">When & Where?</h3>
+        <h3 className="text-2xl font-serif font-bold text-white mb-4">Location & Schedule</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-pink-400" /> Date
+                    <Calendar className="h-4 w-4 text-pink-400" /> Preferred Date
                 </label>
                 <input 
                     type="date" 
@@ -255,7 +231,7 @@ export const BookingWizard: React.FC = () => {
             </div>
             <div>
                 <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-pink-400" /> Time
+                    <Clock className="h-4 w-4 text-pink-400" /> Preferred Time
                 </label>
                 <select 
                     className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -276,11 +252,11 @@ export const BookingWizard: React.FC = () => {
 
         <div>
             <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-pink-400" /> Address
+                <MapPin className="h-4 w-4 text-pink-400" /> Service Address
             </label>
             <input 
                 type="text"
-                placeholder="123 Queen St, Apt 4B, New York, NY"
+                placeholder="123 Queen St, Apt 4B, North Platte, NE"
                 className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent placeholder-gray-400"
                 value={booking.address}
                 onChange={(e) => setBooking({...booking, address: e.target.value})}
@@ -311,108 +287,11 @@ export const BookingWizard: React.FC = () => {
              </div>
         </div>
 
-        <div className="flex justify-between pt-6">
-            <button onClick={prevStep} className="text-gray-400 hover:text-white font-medium px-4 flex items-center gap-2 transition-colors">
-                <ArrowLeft className="h-4 w-4" /> Back
-            </button>
-            <button 
-                onClick={nextStep} 
-                disabled={!booking.date || !booking.address || !booking.contactName}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-900/50"
-            >
-                Next: Payment <ArrowRight className="h-4 w-4" />
-            </button>
-        </div>
-    </div>
-  );
-
-  const renderStep3_Payment = () => (
-    <div className="space-y-6 animate-fadeIn">
-        <h3 className="text-2xl font-serif font-bold text-white mb-4">Secure Payment</h3>
-        
-        <div className="bg-yellow-900/30 border border-yellow-700/50 p-4 rounded-lg flex gap-3 text-yellow-200 mb-4">
-            <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5 text-yellow-400" />
-            <p className="text-sm">
-                <strong className="text-yellow-400">Note:</strong> Your appointment is pending approval. You will not be charged until we confirm your time slot is available.
+        <div className="bg-purple-900/30 p-4 rounded-xl border border-purple-500/30 mt-6 flex gap-3 items-start">
+            <Info className="h-6 w-6 text-pink-400 flex-shrink-0 mt-1" />
+            <p className="text-gray-200 text-sm">
+                <strong>Pricing Policy:</strong> Costs of services are determined on a case by case basis and an estimation is required before giving a price. Submit this form for a personalized quote.
             </p>
-        </div>
-
-        <div className="bg-gray-800 p-6 rounded-xl space-y-3 mb-6 border border-gray-700">
-            <div className="flex justify-between text-gray-400">
-                <span>{booking.serviceType} ({booking.bedrooms} Bed, {booking.bathrooms} Bath)</span>
-                <span>${booking.price}</span>
-            </div>
-            <div className="flex justify-between text-gray-400">
-                <span>Tax & Fees</span>
-                <span>${(booking.price * 0.08).toFixed(2)}</span>
-            </div>
-            <div className="border-t border-gray-600 pt-3 flex justify-between font-bold text-xl text-white">
-                <span>Estimated Total</span>
-                <span>${(booking.price * 1.08).toFixed(2)}</span>
-            </div>
-        </div>
-
-        <div className="space-y-4">
-            <h4 className="font-bold text-gray-300">Select Payment Method</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                    { id: PaymentMethod.CREDIT_CARD, icon: CreditCard, label: 'Credit Card' },
-                    { id: PaymentMethod.PAYPAL, icon: DollarSign, label: 'PayPal' },
-                    { id: PaymentMethod.CASH, icon: User, label: 'Cash on Arrival' },
-                ].map((pm) => (
-                    <button
-                        key={pm.id}
-                        onClick={() => setBooking({...booking, paymentMethod: pm.id})}
-                        className={`p-4 rounded-lg border-2 flex flex-col items-center justify-center gap-2 transition-all ${
-                            booking.paymentMethod === pm.id 
-                            ? 'border-pink-500 bg-purple-900/30 text-white shadow-md transform scale-[1.02]' 
-                            : 'border-gray-600 text-gray-400 hover:border-pink-400 bg-gray-800/50'
-                        }`}
-                    >
-                        <pm.icon className="h-6 w-6" />
-                        <span className="font-medium">{pm.label}</span>
-                    </button>
-                ))}
-            </div>
-
-            {booking.paymentMethod === PaymentMethod.CREDIT_CARD && (
-                <div className="bg-gray-800 p-5 border border-gray-700 rounded-lg space-y-4 mt-4 animate-fadeIn shadow-inner">
-                    <div className="flex items-center gap-2 mb-2 text-gray-400 text-sm">
-                        <Lock className="h-3 w-3" /> SSL Secure Payment (Card held for reservation)
-                    </div>
-                    <input type="text" placeholder="Card Number" className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded focus:ring-2 focus:ring-pink-500 focus:outline-none placeholder-gray-400" />
-                    <div className="flex gap-4">
-                        <input type="text" placeholder="MM/YY" className="w-1/2 p-3 border border-gray-600 bg-gray-700 text-white rounded focus:ring-2 focus:ring-pink-500 focus:outline-none placeholder-gray-400" />
-                        <input type="text" placeholder="CVC" className="w-1/2 p-3 border border-gray-600 bg-gray-700 text-white rounded focus:ring-2 focus:ring-pink-500 focus:outline-none placeholder-gray-400" />
-                    </div>
-                    <div className="pt-2">
-                        <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                checked={sameAsShipping} 
-                                onChange={(e) => setSameAsShipping(e.target.checked)}
-                                className="w-4 h-4 text-pink-500 border-gray-500 rounded focus:ring-pink-500 bg-gray-700" 
-                            />
-                            Billing address same as cleaning address
-                        </label>
-                    </div>
-                    {!sameAsShipping && (
-                        <div className="space-y-3 pt-2 animate-fadeIn">
-                             <input type="text" placeholder="Billing Address" className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded focus:ring-pink-500 placeholder-gray-400" />
-                             <div className="flex gap-4">
-                                <input type="text" placeholder="City" className="w-1/2 p-3 border border-gray-600 bg-gray-700 text-white rounded focus:ring-pink-500 placeholder-gray-400" />
-                                <input type="text" placeholder="Zip Code" className="w-1/2 p-3 border border-gray-600 bg-gray-700 text-white rounded focus:ring-pink-500 placeholder-gray-400" />
-                             </div>
-                        </div>
-                    )}
-                </div>
-            )}
-            
-            {booking.paymentMethod === PaymentMethod.PAYPAL && (
-                <div className="bg-blue-900/30 p-4 rounded text-center text-blue-200 border border-blue-800 animate-fadeIn">
-                    You will be redirected to PayPal to verify your payment method.
-                </div>
-            )}
         </div>
 
         {submitError && (
@@ -426,35 +305,31 @@ export const BookingWizard: React.FC = () => {
                 <ArrowLeft className="h-4 w-4" /> Back
             </button>
             <button 
-                onClick={handleSubmitBooking}
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 shadow-lg flex items-center gap-2 shadow-purple-900/50 disabled:opacity-50"
+                onClick={handleSubmitBooking} 
+                disabled={!booking.date || !booking.address || !booking.contactName || isSubmitting}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-900/50"
             >
-                {isSubmitting ? (
-                    <>Sending Request <Loader2 className="h-4 w-4 animate-spin" /></>
-                ) : (
-                    <>Request Appointment <CheckCircle className="h-4 w-4" /></>
-                )}
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Request Quote <CheckCircle className="h-4 w-4" /></>}
             </button>
         </div>
     </div>
   );
 
-  const renderStep4_Success = () => (
+  const renderStep3_Success = () => (
     <div className="text-center py-12 space-y-6 animate-fadeIn">
-        <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-blue-900/30 mb-4 ring-1 ring-blue-500/50">
-            <CheckCircle className="h-12 w-12 text-blue-400" />
+        <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-pink-900/30 mb-4 ring-1 ring-pink-500/50">
+            <CheckCircle className="h-12 w-12 text-pink-400" />
         </div>
-        <h3 className="text-3xl font-serif font-bold text-white">Request Received!</h3>
+        <h3 className="text-3xl font-serif font-bold text-white">Quote Request Received!</h3>
         <p className="text-gray-300 max-w-md mx-auto">
-            Thank you, {booking.contactName}. We have received your request for a {booking.serviceType} on <strong>{booking.date} at {booking.time}</strong>.
+            Thank you, {booking.contactName}. We have received your request for a {booking.serviceType}.
         </p>
-        <div className="bg-blue-900/20 p-4 rounded-lg max-w-md mx-auto text-blue-200 text-sm border border-blue-800">
-            We are currently reviewing our schedule. You will receive a confirmation email shortly once your time slot is approved.
+        <div className="bg-purple-900/20 p-4 rounded-lg max-w-md mx-auto text-purple-200 text-sm border border-purple-800">
+            We will contact you shortly to discuss your specific needs and provide a tailored price estimation.
         </div>
         <div className="pt-8">
             <button onClick={() => window.location.reload()} className="text-pink-400 font-bold hover:text-pink-300 hover:underline">
-                Request Another Job
+                New Request
             </button>
         </div>
     </div>
@@ -463,7 +338,7 @@ export const BookingWizard: React.FC = () => {
   return (
     <div className="bg-gray-800/80 rounded-2xl shadow-xl overflow-hidden max-w-4xl mx-auto my-12 border border-purple-500/30 backdrop-blur-sm">
         <div className="bg-gray-900 p-6 flex justify-between items-center text-white border-b border-purple-500/20">
-            <h2 className="text-xl font-bold font-serif text-pink-400">Book Your Clean</h2>
+            <h2 className="text-xl font-bold font-serif text-pink-400">Request Your Quote</h2>
             <div className="flex gap-2">
                 {[1, 2, 3].map(i => (
                     <div key={i} className={`h-2 w-8 rounded-full transition-colors ${step >= i ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-700'}`} />
@@ -473,8 +348,7 @@ export const BookingWizard: React.FC = () => {
         <div className="p-8">
             {step === 1 && renderStep1_Service()}
             {step === 2 && renderStep2_Details()}
-            {step === 3 && renderStep3_Payment()}
-            {step === 4 && renderStep4_Success()}
+            {step === 3 && renderStep3_Success()}
         </div>
     </div>
   );

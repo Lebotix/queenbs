@@ -28,7 +28,7 @@ export const Services: React.FC = () => {
                     <div className="bg-gray-800/80 p-8 rounded-lg border border-purple-500/40 hover:border-pink-400 hover:shadow-lg hover:shadow-pink-500/30 transition-all">
                         <Package className="w-12 h-12 text-pink-400 mb-4" />
                         <h3 className="text-2xl font-semibold mb-3 text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>Rental Clean Outs</h3>
-                        <p className="text-gray-100">Thorough cleaning for rental properties between tenants.</p>
+                        <p className="text-gray-100">Fast and thorough cleaning for rental properties between tenants.</p>
                     </div>
                     <div className="bg-gray-800/80 p-8 rounded-lg border border-purple-500/40 hover:border-pink-400 hover:shadow-lg hover:shadow-pink-500/30 transition-all">
                         <Home className="w-12 h-12 text-pink-400 mb-4" />

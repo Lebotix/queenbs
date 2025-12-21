@@ -1,9 +1,16 @@
+
 import { GoogleGenAI, Type, Schema, Chat } from "@google/genai";
 import { AIQuoteResponse, ServiceType } from '../types';
 
-// Initialize the Gemini Client
-// CRITICAL: We use process.env.API_KEY as per guidelines
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to get AI instance safely
+const getAI = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    console.error("API Key is missing for Gemini Service");
+    return null;
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export const generateSmartQuote = async (
   description: string, 
@@ -11,10 +18,8 @@ export const generateSmartQuote = async (
   bathrooms: number
 ): Promise<AIQuoteResponse | null> => {
   
-  if (!process.env.API_KEY) {
-    console.error("API Key is missing for Gemini Service");
-    return null;
-  }
+  const ai = getAI();
+  if (!ai) return null;
 
   const modelId = "gemini-2.5-flash"; // Fast and efficient for text tasks
 
@@ -26,32 +31,32 @@ export const generateSmartQuote = async (
     - Bathrooms: ${bathrooms}
     - User Description: "${description}"
     
-    Base Pricing Rules (Internal Logic):
-    - Standard cleaning base: $100 + $20/bed + $30/bath.
-    - Deep cleaning multiplier: 1.5x.
-    - Move out multiplier: 1.8x.
-    - Hazardous or extremely messy descriptions (hoarding, mold, etc) add 50% surcharge.
+    Service Definitions:
+    - Standard cleaning: Maintenance cleaning for lived-in homes.
+    - Deep cleaning: For homes that haven't been professionally cleaned in a while. Includes baseboards, inside appliances.
+    - Move In/Out: Empty home cleaning.
+    - Post Construction: Dust and debris removal after renovations.
     
     Task:
     1. Determine the best ServiceType (Standard Clean, Deep Clean, Move In/Out, Post Construction).
-    2. Estimate the price based on complexity and size.
-    3. Estimate the hours required (assume 1 cleaner).
-    4. Provide a short reasoning sentence.
+    2. Estimate the hours required (assume 1 cleaner) based on size and description messiness.
+    3. Provide a short reasoning sentence explaining why this service fits the description.
+    
+    IMPORTANT: Do not provide a dollar amount. Remind them pricing is case-by-case.
   `;
 
   const schema: Schema = {
     type: Type.OBJECT,
     properties: {
-      estimatedPrice: { type: Type.NUMBER, description: "Total estimated cost in USD" },
       estimatedHours: { type: Type.NUMBER, description: "Estimated duration in hours" },
       recommendedService: { 
         type: Type.STRING, 
         enum: Object.values(ServiceType),
         description: "The recommended service package" 
       },
-      reasoning: { type: Type.STRING, description: "Why this service and price was calculated" }
+      reasoning: { type: Type.STRING, description: "Why this service was selected based on the user's description." }
     },
-    required: ["estimatedPrice", "estimatedHours", "recommendedService", "reasoning"]
+    required: ["estimatedHours", "recommendedService", "reasoning"]
   };
 
   try {
@@ -61,7 +66,7 @@ export const generateSmartQuote = async (
       config: {
         responseMimeType: "application/json",
         responseSchema: schema,
-        temperature: 0.2 // Low temperature for consistent pricing
+        temperature: 0.2
       }
     });
 
@@ -76,31 +81,34 @@ export const generateSmartQuote = async (
 };
 
 export const createAssistantChat = (): Chat => {
-  if (!process.env.API_KEY) {
-    console.error("API Key is missing for Gemini Chat");
+  const ai = getAI();
+  if (!ai) {
     throw new Error("API Key missing");
   }
+
   return ai.chats.create({
     model: 'gemini-2.5-flash',
     config: {
       systemInstruction: `You are 'Bee', the helpful virtual assistant for Queen B's Cleaning. 
       Your tone is polite, royal, and helpful.
       
-      Services & Base Pricing (Estimates):
-      - Standard Maintenance: Starts at $120. Good for recurring.
-      - Royal Deep Clean: Starts at $200. Includes baseboards, fans, appliances.
-      - Move In/Out: Starts at $280. Empty home specialist.
-      - Post-Construction: Starts at $350.
+      Services:
+      - Standard Maintenance: Good for recurring.
+      - Royal Deep Clean: Includes baseboards, fans, appliances.
+      - Move In/Out: Empty home specialist.
+      - Post-Construction.
       
-      We accept Credit Cards, PayPal, and Cash.
+      IMPORTANT PRICING POLICY:
+      - Do not give specific price quotes.
+      - State clearly: "Costs of services are determined on a case by case basis and an estimation is required before giving a price."
+      - Encourage users to fill out the 'Schedule Online' or 'Request Quote' form for a personalized estimation.
 
       IMPORTANT BOOKING POLICIES:
-      - All online bookings are **requests pending approval**.
-      - We manually review schedule availability. If a requested time is full, we will contact the customer to find the next available slot.
-      - Please remind users that their appointment is not confirmed until they receive an approval email from us.
+      - All online quote requests are reviewed manually.
+      - We will contact the customer to find the next available slot once a price is discussed.
       
-      Goal: Answer questions about cleaning and encourage them to use the 'Book Now' form.
-      Keep responses concise (under 50 words) unless asked for a list.`,
+      Goal: Answer questions about cleaning and encourage them to use the 'Book Now' or 'Request Quote' form.
+      Keep responses concise (under 50 words).`,
     }
   });
 };
