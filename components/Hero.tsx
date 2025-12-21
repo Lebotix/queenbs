@@ -11,7 +11,7 @@ export const Hero: React.FC = () => {
                     <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }} className="block">
                         <div className="animate-logo-entrance">
                             <img
-                                src="https://i.imgur.com/035fOyH.jpeg"
+                                src="https://i.imgur.com/fRIZZIq.png"
                                 alt="Queen B's Cleaning Logo"
                                 className="w-64 h-64 object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500 animate-float"
                             />
