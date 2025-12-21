@@ -52,7 +52,7 @@ export const BookingWizard: React.FC = () => {
           serviceType: quote.recommendedService
         }));
       } else {
-        setAiError("Couldn't analyze request. Please proceed manually.");
+        setAiError("Couldn't generate a quote. Please proceed manually.");
       }
     } catch (e) {
       setAiError("AI Service unavailable.");
@@ -82,13 +82,13 @@ export const BookingWizard: React.FC = () => {
 
   const renderStep1_Service = () => (
     <div className="space-y-6 animate-fadeIn">
-      <h3 className="text-2xl font-serif font-bold text-white mb-4">Select Service Interest</h3>
+      <h3 className="text-2xl font-serif font-bold text-white mb-4">Choose Your Service</h3>
       
       {/* AI Helper Section */}
       <div className="bg-gray-900/50 border border-purple-500/30 p-6 rounded-xl mb-8">
         <div className="flex items-center gap-2 mb-3 text-pink-400">
           <Wand2 className="h-5 w-5" />
-          <h4 className="font-bold">Describe your needs for a better estimate.</h4>
+          <h4 className="font-bold">Not sure what you need? Ask our AI Assistant.</h4>
         </div>
         <div className="flex gap-4 flex-col md:flex-row">
             <div className="flex-1">
@@ -130,15 +130,16 @@ export const BookingWizard: React.FC = () => {
                     disabled={isProcessingAI || !aiDescription}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-bold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-900/50"
                 >
-                    {isProcessingAI ? <Loader2 className="animate-spin h-4 w-4" /> : 'Analyze Details'}
+                    {isProcessingAI ? <Loader2 className="animate-spin h-4 w-4" /> : 'Get Smart Suggestion'}
                 </button>
             </div>
         </div>
         {aiError && <p className="text-red-400 text-sm mt-2">{aiError}</p>}
         {aiSuggestion && (
             <div className="mt-4 bg-gray-800 p-4 rounded border-l-4 border-pink-500 shadow-sm">
-                <p className="text-white font-medium">Recommended: <span className="font-bold text-pink-400">{aiSuggestion.recommendedService}</span></p>
+                <p className="text-white font-medium">Suggestion: <span className="font-bold text-pink-400">{aiSuggestion.recommendedService}</span></p>
                 <p className="text-gray-300 text-sm italic">"{aiSuggestion.reasoning}"</p>
+                <p className="text-purple-400 font-bold mt-1">Est. Time: {aiSuggestion.estimatedHours} hrs</p>
             </div>
         )}
       </div>
@@ -151,7 +152,7 @@ export const BookingWizard: React.FC = () => {
               key={service.id}
               onClick={() => {
                 setBooking({ ...booking, serviceType: service.id });
-                setAiSuggestion(null);
+                setAiSuggestion(null); // Reset AI override if user manually selects
               }}
               className={`relative p-6 border rounded-xl text-left transition-all hover:shadow-lg ${
                 booking.serviceType === service.id
@@ -178,6 +179,7 @@ export const BookingWizard: React.FC = () => {
         })}
       </div>
 
+      {/* Manual Details if no AI used */}
       {!aiSuggestion && (
           <div className="mt-8 grid grid-cols-2 gap-6 bg-gray-800 p-6 rounded-xl border border-gray-600">
              <div>
@@ -205,7 +207,7 @@ export const BookingWizard: React.FC = () => {
 
       <div className="flex justify-end pt-6 border-t border-gray-700">
         <button onClick={nextStep} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 shadow-lg shadow-purple-900/50">
-            Next Step <ArrowRight className="h-4 w-4" />
+            Next: Schedule <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </div>
@@ -213,12 +215,12 @@ export const BookingWizard: React.FC = () => {
 
   const renderStep2_Details = () => (
     <div className="space-y-6 animate-fadeIn">
-        <h3 className="text-2xl font-serif font-bold text-white mb-4">Location & Schedule</h3>
+        <h3 className="text-2xl font-serif font-bold text-white mb-4">When & Where?</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-pink-400" /> Preferred Date
+                    <Calendar className="h-4 w-4 text-pink-400" /> Date
                 </label>
                 <input 
                     type="date" 
@@ -231,7 +233,7 @@ export const BookingWizard: React.FC = () => {
             </div>
             <div>
                 <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-pink-400" /> Preferred Time
+                    <Clock className="h-4 w-4 text-pink-400" /> Time
                 </label>
                 <select 
                     className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -252,11 +254,11 @@ export const BookingWizard: React.FC = () => {
 
         <div>
             <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-pink-400" /> Service Address
+                <MapPin className="h-4 w-4 text-pink-400" /> Address
             </label>
             <input 
                 type="text"
-                placeholder="123 Queen St, Apt 4B, North Platte, NE"
+                placeholder="123 Queen St, Apt 4B, New York, NY"
                 className="w-full p-3 border border-gray-600 bg-gray-700 text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent placeholder-gray-400"
                 value={booking.address}
                 onChange={(e) => setBooking({...booking, address: e.target.value})}
@@ -287,10 +289,10 @@ export const BookingWizard: React.FC = () => {
              </div>
         </div>
 
-        <div className="bg-purple-900/30 p-4 rounded-xl border border-purple-500/30 mt-6 flex gap-3 items-start">
-            <Info className="h-6 w-6 text-pink-400 flex-shrink-0 mt-1" />
+        <div className="bg-blue-900/20 p-4 rounded-xl border border-blue-500/30 mt-6 flex gap-3 items-start">
+            <Info className="h-6 w-6 text-blue-400 flex-shrink-0 mt-1" />
             <p className="text-gray-200 text-sm">
-                <strong>Pricing Policy:</strong> Costs of services are determined on a case by case basis and an estimation is required before giving a price. Submit this form for a personalized quote.
+                <strong>Please Note:</strong> All services are estimated and tallied on a case by case basis and are not one size fits all. We will discuss final pricing with you directly.
             </p>
         </div>
 
@@ -309,7 +311,7 @@ export const BookingWizard: React.FC = () => {
                 disabled={!booking.date || !booking.address || !booking.contactName || isSubmitting}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-900/50"
             >
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Request Quote <CheckCircle className="h-4 w-4" /></>}
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Request Free Quote <CheckCircle className="h-4 w-4" /></>}
             </button>
         </div>
     </div>
@@ -317,19 +319,19 @@ export const BookingWizard: React.FC = () => {
 
   const renderStep3_Success = () => (
     <div className="text-center py-12 space-y-6 animate-fadeIn">
-        <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-pink-900/30 mb-4 ring-1 ring-pink-500/50">
-            <CheckCircle className="h-12 w-12 text-pink-400" />
+        <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-blue-900/30 mb-4 ring-1 ring-blue-500/50">
+            <CheckCircle className="h-12 w-12 text-blue-400" />
         </div>
         <h3 className="text-3xl font-serif font-bold text-white">Quote Request Received!</h3>
         <p className="text-gray-300 max-w-md mx-auto">
-            Thank you, {booking.contactName}. We have received your request for a {booking.serviceType}.
+            Thank you, {booking.contactName}. We have received your request for a {booking.serviceType} on <strong>{booking.date} at {booking.time}</strong>.
         </p>
-        <div className="bg-purple-900/20 p-4 rounded-lg max-w-md mx-auto text-purple-200 text-sm border border-purple-800">
-            We will contact you shortly to discuss your specific needs and provide a tailored price estimation.
+        <div className="bg-blue-900/20 p-4 rounded-lg max-w-md mx-auto text-blue-200 text-sm border border-blue-800">
+            We will contact you shortly to confirm details and provide a personalized price estimate.
         </div>
         <div className="pt-8">
             <button onClick={() => window.location.reload()} className="text-pink-400 font-bold hover:text-pink-300 hover:underline">
-                New Request
+                Request Another Quote
             </button>
         </div>
     </div>
@@ -338,7 +340,7 @@ export const BookingWizard: React.FC = () => {
   return (
     <div className="bg-gray-800/80 rounded-2xl shadow-xl overflow-hidden max-w-4xl mx-auto my-12 border border-purple-500/30 backdrop-blur-sm">
         <div className="bg-gray-900 p-6 flex justify-between items-center text-white border-b border-purple-500/20">
-            <h2 className="text-xl font-bold font-serif text-pink-400">Request Your Quote</h2>
+            <h2 className="text-xl font-bold font-serif text-pink-400">Book Your Clean</h2>
             <div className="flex gap-2">
                 {[1, 2, 3].map(i => (
                     <div key={i} className={`h-2 w-8 rounded-full transition-colors ${step >= i ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-700'}`} />

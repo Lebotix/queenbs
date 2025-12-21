@@ -31,6 +31,20 @@
               sans: ['Lato', 'sans-serif'],
               cursive: ['Ephesis', 'cursive'],
               display: ['Lobster', 'cursive'],
+            },
+            keyframes: {
+              logoAppear: {
+                '0%': { opacity: '0', transform: 'scale(0.8) translateY(30px)' },
+                '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+              },
+              subtleFloat: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-15px)' },
+              }
+            },
+            animation: {
+              'logo-entrance': 'logoAppear 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+              'float': 'subtleFloat 6s ease-in-out infinite',
             }
           }
         }
@@ -40,6 +54,13 @@
       /* Smooth scrolling for anchor links */
       html {
         scroll-behavior: smooth;
+      }
+      
+      /* Custom utility for combining animations if needed, 
+         but we'll apply them thoughtfully in the component */
+      .logo-combined-animation {
+        animation: logoAppear 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards, 
+                   subtleFloat 6s ease-in-out infinite 1.5s;
       }
     </style>
   <script type="importmap">

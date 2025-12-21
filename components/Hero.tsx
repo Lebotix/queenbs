@@ -5,19 +5,17 @@ import { LOGO_URL } from '../constants';
 
 export const Hero: React.FC = () => {
     return (
-        <section className="pt-32 pb-20 px-6">
+        <section className="pt-32 pb-20 px-6 overflow-hidden">
             <div className="max-w-6xl mx-auto text-center">
                 <div className="mb-8 flex justify-center">
-                    <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>
-                        <img
-                            src={LOGO_URL}
-                            alt="Queen B's Cleaning Logo"
-                            className="w-64 h-64 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500"
-                            onError={(e) => {
-                                // Fallback if image doesn't exist yet
-                                (e.target as HTMLImageElement).src = "https://placehold.co/400x400/purple/white?text=Queen+Bs+Cleaning";
-                            }}
-                        />
+                    <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }} className="block">
+                        <div className="animate-logo-entrance">
+                            <img
+                                src="https://i.imgur.com/035fOyH.jpeg"
+                                alt="Queen B's Cleaning Logo"
+                                className="w-64 h-64 object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500 animate-float"
+                            />
+                        </div>
                     </a>
                 </div>
                 <h1 className="text-7xl md:text-8xl mb-6" style={{ fontFamily: 'Ephesis, cursive', color: '#c084fc', textShadow: '3px 3px 0 #1f2937, -1px -1px 0 #1f2937, 1px -1px 0 #1f2937, -1px 1px 0 #1f2937' }}>
@@ -41,7 +39,7 @@ export const Hero: React.FC = () => {
                     onClick={() => scrollToSection('booking')}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all transform hover:scale-105 shadow-lg shadow-purple-500/50"
                 >
-                    Request a Quote
+                    Schedule Online
                 </button>
             </div>
         </section>
