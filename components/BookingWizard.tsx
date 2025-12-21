@@ -147,6 +147,7 @@ export const BookingWizard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {SERVICES.map((service) => {
           const Icon = icons[service.iconName];
+          const isSelected = booking.serviceType === service.id;
           return (
             <button
               key={service.id}
@@ -154,23 +155,27 @@ export const BookingWizard: React.FC = () => {
                 setBooking({ ...booking, serviceType: service.id });
                 setAiSuggestion(null); // Reset AI override if user manually selects
               }}
-              className={`relative p-6 border rounded-xl text-left transition-all hover:shadow-lg ${
-                booking.serviceType === service.id
-                  ? 'border-pink-500 bg-purple-900/30 ring-1 ring-pink-500'
-                  : 'border-gray-600 hover:border-pink-400 bg-gray-800/50'
+              className={`relative p-5 border rounded-xl text-left transition-all duration-300 group ${
+                isSelected
+                  ? 'border-pink-500 bg-purple-900/30 ring-1 ring-pink-500 shadow-lg shadow-pink-500/10'
+                  : 'border-gray-600 hover:border-pink-400/50 bg-gray-800/50'
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div>
-                    <div className={`p-2 rounded-lg shadow-sm inline-block mb-3 ${booking.serviceType === service.id ? 'bg-purple-500/20' : 'bg-gray-700'}`}>
-                        <Icon className={`h-6 w-6 ${booking.serviceType === service.id ? 'text-pink-400' : 'text-gray-400'}`} />
-                    </div>
-                    <h4 className="font-bold text-lg text-white">{service.title}</h4>
-                    <p className="text-gray-400 text-sm mt-1">{service.description}</p>
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-xl shadow-sm flex-shrink-0 transition-colors duration-300 ${isSelected ? 'bg-purple-500/30 text-pink-400' : 'bg-gray-700 text-gray-400 group-hover:text-pink-300'}`}>
+                    <Icon className="h-6 w-6" />
                 </div>
-                {booking.serviceType === service.id && (
-                    <div className="absolute top-4 right-4">
-                        <CheckCircle className="h-6 w-6 text-pink-500" />
+                <div className="flex-1 pr-6">
+                    <h4 className={`font-bold text-lg leading-tight transition-colors duration-300 ${isSelected ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
+                        {service.title}
+                    </h4>
+                    <p className="text-gray-400 text-sm mt-1.5 line-clamp-2 leading-relaxed">
+                        {service.description}
+                    </p>
+                </div>
+                {isSelected && (
+                    <div className="absolute top-4 right-4 animate-scaleIn">
+                        <CheckCircle className="h-5 w-5 text-pink-500" />
                     </div>
                 )}
               </div>
@@ -181,23 +186,23 @@ export const BookingWizard: React.FC = () => {
 
       {/* Manual Details if no AI used */}
       {!aiSuggestion && (
-          <div className="mt-8 grid grid-cols-2 gap-6 bg-gray-800 p-6 rounded-xl border border-gray-600">
+          <div className="mt-8 grid grid-cols-2 gap-6 bg-gray-800/40 p-6 rounded-xl border border-gray-600/50">
              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Bedrooms</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Bedrooms</label>
                 <select 
                     value={booking.bedrooms}
                     onChange={(e) => setBooking({...booking, bedrooms: parseInt(e.target.value)})}
-                    className="w-full p-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:ring-pink-500"
+                    className="w-full p-3 border border-gray-600 bg-gray-700/50 text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
                 >
                     {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
              </div>
              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Bathrooms</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Bathrooms</label>
                 <select 
                     value={booking.bathrooms}
                     onChange={(e) => setBooking({...booking, bathrooms: parseInt(e.target.value)})}
-                    className="w-full p-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:ring-pink-500"
+                    className="w-full p-3 border border-gray-600 bg-gray-700/50 text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
                 >
                     {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
@@ -205,9 +210,9 @@ export const BookingWizard: React.FC = () => {
           </div>
       )}
 
-      <div className="flex justify-end pt-6 border-t border-gray-700">
-        <button onClick={nextStep} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 shadow-lg shadow-purple-900/50">
-            Next: Schedule <ArrowRight className="h-4 w-4" />
+      <div className="flex justify-end pt-6 border-t border-gray-700/50">
+        <button onClick={nextStep} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-bold hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 shadow-lg shadow-purple-900/50 transform transition-all active:scale-95">
+            Next: Schedule <ArrowRight className="h-5 w-5" />
         </button>
       </div>
     </div>

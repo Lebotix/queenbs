@@ -1,10 +1,8 @@
-
-import { GoogleGenAI, Type, Schema, Chat } from "@google/genai";
+import { GoogleGenAI, Type, Chat } from "@google/genai";
 import { AIQuoteResponse, ServiceType } from '../types';
 
-// Initialize the Gemini Client
-// CRITICAL: We use process.env.API_KEY as per guidelines
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// CRITICAL: We use process.env.API_KEY as per guidelines.
+// Initialize inside functions or use a fresh instance to ensure correct API key context.
 
 export const generateSmartQuote = async (
   description: string, 
@@ -17,7 +15,10 @@ export const generateSmartQuote = async (
     return null;
   }
 
-  const modelId = "gemini-2.5-flash"; // Fast and efficient for text tasks
+  // Create fresh instance per request to handle potential key updates
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Updated to gemini-3-flash-preview for efficient text tasks
+  const modelId = "gemini-3-flash-preview"; 
 
   const prompt = `
     Analyze the following cleaning job request for "Queen B's Cleaning".
@@ -39,14 +40,15 @@ export const generateSmartQuote = async (
     3. Provide a short reasoning sentence explaining why this service fits the description.
   `;
 
-  const schema: Schema = {
+  // Removed Schema type annotation as it is deprecated.
+  // Defined structure based on OpenAPI/Type system in @google/genai guidelines.
+  const schema = {
     type: Type.OBJECT,
     properties: {
       estimatedHours: { type: Type.NUMBER, description: "Estimated duration in hours" },
       recommendedService: { 
         type: Type.STRING, 
-        enum: Object.values(ServiceType),
-        description: "The recommended service package" 
+        description: "The recommended service package (one of: Standard Clean, Deep Clean, Move In/Out, Post Construction)" 
       },
       reasoning: { type: Type.STRING, description: "Why this service was selected based on the user's description." }
     },
@@ -64,6 +66,7 @@ export const generateSmartQuote = async (
       }
     });
 
+    // Access the text property directly on response
     const text = response.text;
     if (!text) return null;
 
@@ -79,8 +82,13 @@ export const createAssistantChat = (): Chat => {
     console.error("API Key is missing for Gemini Chat");
     throw new Error("API Key missing");
   }
+
+  // Use a fresh GoogleGenAI instance for chat creation
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
   return ai.chats.create({
-    model: 'gemini-2.5-flash',
+    // Updated to gemini-3-flash-preview as per guidelines
+    model: 'gemini-3-flash-preview',
     config: {
       systemInstruction: `You are 'Bee', the helpful virtual assistant for Queen B's Cleaning. 
       Your tone is polite, royal, and helpful.
